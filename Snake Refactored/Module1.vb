@@ -130,7 +130,7 @@ Module Module1
             Console.Clear()
             Console.BackgroundColor = ConsoleColor.Black
             Console.ForegroundColor = ConsoleColor.White
-            Dim arr() As String = {"Stats retrieved from the text file:", $"Number of Scores recorded: {Scores.Count}", $"Average Score: {Scores.Average}", $"Highest Score: {Scores.Max}", $"Lowest Score: {Scores.Min}", $"Most common score: {Scores.GroupBy(Function(n) n).OrderByDescending(Function(g) g.Count).Select(Function(g) g.Key).FirstOrDefault}"}
+            Dim arr() As String = {"Stats retrieved from the text file:", $"Number of Scores recorded: {Scores.Count}", $"Average Score: {Math.Ceiling(Scores.Average)}", $"Highest Score: {Scores.Max}", $"Lowest Score: {Scores.Min}", $"Most common score: {Scores.GroupBy(Function(n) n).OrderByDescending(Function(g) g.Count).Select(Function(g) g.Key).FirstOrDefault}"}
             Dim count As Integer = -arr.Count / 2 - 1
             For Each message In arr
                 Console.SetCursorPosition(Console.WindowWidth / 2 - message.Length / 2, Console.WindowHeight / 2 + count)
@@ -142,15 +142,6 @@ Module Module1
             Console.SetCursorPosition(Console.WindowWidth / 2 - message.Length / 2, Console.WindowHeight / 2)
             Console.Write(message)
         End If
-    End Sub
-    Sub ShowMaxScore()
-        Console.Clear()
-        Dim Scores As List(Of Integer) = GetScoresInList()
-        Console.BackgroundColor = ConsoleColor.Black
-        Console.ForegroundColor = ConsoleColor.White
-        Dim Message As String = $"High score: {Scores.Max}"
-        Console.SetCursorPosition(Console.WindowWidth / 2 - Message.Length / 2, Console.WindowHeight / 2)
-        Console.Write(Message)
     End Sub
     Function GetScoresInList()
         If System.IO.File.Exists("Scores.txt") Then
@@ -164,16 +155,6 @@ Module Module1
         End If
         Return Nothing
     End Function
-    Sub DisplayScoreAverage()
-        Console.Clear()
-        Dim Scores As List(Of Integer) = GetScoresInList()
-        Console.BackgroundColor = ConsoleColor.Black
-        Console.ForegroundColor = ConsoleColor.White
-        Dim Message As String = $"Average score: {Scores.Average}"
-        Console.SetCursorPosition(Console.WindowWidth / 2 - Message.Length / 2, Console.WindowHeight / 2)
-        Console.Write(Message)
-    End Sub
-
     Sub RecordScore(ByVal Score As Integer)
         Using writer As StreamWriter = New StreamWriter("Scores.txt", True)
             writer.WriteLine(Score)
