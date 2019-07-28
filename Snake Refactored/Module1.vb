@@ -6,17 +6,16 @@ Module Module1
         Console.ReadKey()
         Console.Clear()
         Console.CursorVisible = False
-        Dim arr As New List(Of Point)
+        Dim SnakeBody As New List(Of Point)
         Dim SnakeHead, Apple, AppleOffset As New Point(3, 6)
         Dim Scores As New List(Of Integer)
         Dim r As New Random
-        Dim Direction, SnakeLength, MinHeight, Width, Height, AppleScore As Integer
-        Dim c As Integer = 0
+        Dim Direction, SnakeLength, MinHeight, Width, Height, AppleScore, Count As Integer
         While 1
             Console.BackgroundColor = ConsoleColor.Black
             Console.ForegroundColor = ConsoleColor.Black
             SnakeHead.Update(3, 6)
-            arr.Clear()
+            SnakeBody.Clear()
             AppleScore = 0
             Width = Console.WindowWidth - 1
             Height = Console.WindowHeight - 1
@@ -36,10 +35,10 @@ Module Module1
             PrintScore(AppleScore)
             Dim Start As Stopwatch = Stopwatch.StartNew
             While 1
-                If arr.Contains(Apple) Or arr.Contains(AppleOffset) Then
+                If SnakeBody.Contains(Apple) Or SnakeBody.Contains(AppleOffset) Then
                     Do
                         Apple.Update(r.Next(2, Width), r.Next(MinHeight + 1, Height))
-                    Loop Until Not arr.Contains(Apple) And Apple.X Mod 2 <> 0
+                    Loop Until Not SnakeBody.Contains(Apple) And Apple.X Mod 2 <> 0
                     Apple.Print("XX", ConsoleColor.Red)
                     AppleOffset.Update(Apple.X + 1, Apple.Y)
                     SnakeLength += 1
@@ -53,9 +52,9 @@ Module Module1
                         y = Console.CursorTop
                         Dim temp As New Point(x, y)
                         Dim temp1 As New Point(x - 1, y)
-                        If Not arr.Contains(temp) Then
+                        If Not SnakeBody.Contains(temp) Then
                             Console.BackgroundColor = ConsoleColor.Black
-                        ElseIf arr.Contains(temp) Or arr.Contains(temp1) Then
+                        ElseIf SnakeBody.Contains(temp) Or SnakeBody.Contains(temp1) Then
                             Console.BackgroundColor = ConsoleColor.Green
                         End If
                         Dim key = Console.ReadKey
@@ -85,7 +84,7 @@ Module Module1
                                 Exit For
                         End Select
                     End If
-                    'If c > 10 Then Direction = GetComputerDir(arr, SnakeHead, Width, MinHeight, Height, Apple, Direction)
+                    'If Count > 5 Then Direction = GetComputerDir(SnakeBody, SnakeHead, Width, MinHeight, Height, Apple, Direction)
                     Threading.Thread.Sleep(1)
                 Next
                 If Direction = 1 Then
@@ -97,21 +96,22 @@ Module Module1
                 ElseIf Direction = 4 Then
                     SnakeHead.Update(SnakeHead.X + 2, SnakeHead.Y)
                 End If
-                If arr.Contains(SnakeHead) Or Not SnakeHead.WithinLimits(Width, Height, MinHeight) Then
-                    arr.Reverse()
-                    For Each position In arr
+                If SnakeBody.Contains(SnakeHead) Or Not SnakeHead.WithinLimits(Width, Height, MinHeight) Then
+                    SnakeBody.Reverse()
+                    For Each position In SnakeBody
                         position.Print("XX", ConsoleColor.DarkRed)
                         Threading.Thread.Sleep(5)
                     Next
                     Exit While
                 End If
                 SnakeHead.Print("XX", ConsoleColor.Green)
-                arr.Add(New Point(SnakeHead.X, SnakeHead.Y))
-                If arr.Count - 1 > SnakeLength Then
-                    arr(0).Print("  ", ConsoleColor.Black)
-                    arr.RemoveAt(0)
+                SnakeBody.Add(New Point(SnakeHead.X, SnakeHead.Y))
+                If SnakeBody.Count - 1 > SnakeLength Then
+                    SnakeBody(0).Print("  ", ConsoleColor.Black)
+                    SnakeBody.RemoveAt(0)
                 End If
                 time_elapsed(Start)
+                'Count += 1
             End While
             If AppleScore <> 0 Then RecordScore(AppleScore)
             Console.SetCursorPosition(0, 0)
@@ -179,7 +179,6 @@ Module Module1
             writer.WriteLine(Score)
         End Using
     End Sub
-
     Sub time_elapsed(ByVal start As Stopwatch)
         Console.SetCursorPosition(3, 1)
         Dim sec As Integer
@@ -217,14 +216,13 @@ Module Module1
         End If
         If SnakeHead.X > Apple.X Then
             ReturnDir = 2
-            If Direction <> 4 Then Direction = 2
+            If Direction <> 4 Then ReturnDir = 2
 
             'left
         End If
         If SnakeHead.X < Apple.X Then
             ReturnDir = 4
-            If Direction <> 2 Then Direction = 4
-
+            If Direction <> 2 Then ReturnDir = 4
             'right
         End If
         Dim TempSnakeHead As New Point(SnakeHead.X, SnakeHead.Y)
@@ -237,34 +235,23 @@ Module Module1
         ElseIf ReturnDir = 4 Then
             TempSnakeHead.Update(SnakeHead.X + 2, SnakeHead.Y)
         End If
-        TempSnakeHead.Print("XX", ConsoleColor.Blue)
-
         If SnakeList.Contains(TempSnakeHead) Then
             'if the nextmove will result in the snake going into itself:
             If ReturnDir = 1 Or ReturnDir = 3 Then 'if its going up or down then
                 TempSnakeHead.Update(SnakeHead.X - 2, SnakeHead.Y)
-                TempSnakeHead.Print("XX", ConsoleColor.Red)
                 Dim temppoint As New Point(SnakeHead.X + 2, SnakeHead.Y)
-                temppoint.Print("XX", ConsoleColor.Cyan)
-                Console.ReadKey()
-
                 If SnakeList.Contains(TempSnakeHead) Then
                     ReturnDir = 2
                 Else
                     ReturnDir = 4
                 End If
             Else
-
-                'If ReturnDir = 2 Or ReturnDir = 4 Then
                 TempSnakeHead.Update(SnakeHead.X, SnakeHead.Y + 1)
-                TempSnakeHead.Print("XX", ConsoleColor.Red)
                 Dim temppoint As New Point(SnakeHead.X, SnakeHead.Y - 1)
-                temppoint.Print("XX", ConsoleColor.Cyan)
                 If SnakeList.Contains(TempSnakeHead) Then
                     ReturnDir = 3
                 Else
                     ReturnDir = 1
-
                 End If
 
             End If
