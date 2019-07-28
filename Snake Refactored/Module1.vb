@@ -8,9 +8,8 @@ Module Module1
         Console.CursorVisible = False
         Dim SnakeBody As New List(Of Point)
         Dim SnakeHead, Apple, AppleOffset As New Point(3, 6)
-        Dim Scores As New List(Of Integer)
         Dim r As New Random
-        Dim Direction, SnakeLength, MinHeight, Width, Height, AppleScore, Count As Integer
+        Dim Direction, SnakeLength, MinHeight, Width, Height, AppleScore As Integer
         While 1
             Console.BackgroundColor = ConsoleColor.Black
             Console.ForegroundColor = ConsoleColor.Black
@@ -45,7 +44,7 @@ Module Module1
                     AppleScore += 1
                     PrintScore(AppleScore)
                 End If
-                For i = 0 To 15
+                For i = 0 To 1
                     If Console.KeyAvailable Then
                         Dim x, y As Integer
                         x = Console.CursorLeft
@@ -84,8 +83,8 @@ Module Module1
                                 Exit For
                         End Select
                     End If
-                    'If Count > 5 Then Direction = GetComputerDir(SnakeBody, SnakeHead, Width, MinHeight, Height, Apple, Direction)
-                    Threading.Thread.Sleep(1)
+                    'If Count > 5 Then Direction = GetComputerDir(SnakeBody, SnakeHead, Apple, Width, Height, MinHeight)
+                    Threading.Thread.Sleep(2)
                 Next
                 If Direction = 1 Then
                     SnakeHead.Update(SnakeHead.X, SnakeHead.Y + 1)
@@ -96,14 +95,14 @@ Module Module1
                 ElseIf Direction = 4 Then
                     SnakeHead.Update(SnakeHead.X + 2, SnakeHead.Y)
                 End If
-                If SnakeBody.Contains(SnakeHead) Or Not SnakeHead.WithinLimits(Width, Height, MinHeight) Then
+                If SnakeBody.Contains(SnakeHead) Or Not SnakeHead.WithinLimits(0, Width, Height, MinHeight) Then
                     SnakeBody.Reverse()
                     For Each position In SnakeBody
                         position.Print("XX", ConsoleColor.DarkRed)
                         Threading.Thread.Sleep(5)
                     Next
                     Exit While
-                End If
+                End If 'Should the snake be dead?
                 SnakeHead.Print("XX", ConsoleColor.Green)
                 SnakeBody.Add(New Point(SnakeHead.X, SnakeHead.Y))
                 If SnakeBody.Count - 1 > SnakeLength Then
@@ -114,10 +113,6 @@ Module Module1
                 'Count += 1
             End While
             If AppleScore <> 0 Then RecordScore(AppleScore)
-            Console.SetCursorPosition(0, 0)
-            Console.BackgroundColor = ConsoleColor.Green
-            Console.ForegroundColor = ConsoleColor.Green
-            Console.ReadKey()
             Console.BackgroundColor = ConsoleColor.Black
             Console.ForegroundColor = ConsoleColor.Black
             Console.Clear()
@@ -185,61 +180,71 @@ Module Module1
         Console.ForegroundColor = ConsoleColor.White
         Console.Write(Message)
     End Sub
-    Function GetComputerDir(ByVal SnakeList As List(Of Point), ByVal SnakeHead As Point, ByVal Width As Integer, ByVal MinHeight As Integer, ByVal height As Integer, ByVal Apple As Point, ByVal Direction As Integer)
-        Dim ReturnDir As Integer
-        If SnakeHead.Y < Apple.Y Then
-            ReturnDir = 1
-            'up
-        End If
-        If SnakeHead.Y > Apple.Y Then
-            ReturnDir = 3
-            'down
-        End If
+    Function GetComputerDir(ByVal SnakeBody As List(Of Point), ByVal SnakeHead As Point, ByVal Apple As Point, ByVal width As Integer, ByVal height As Integer, ByVal minheight As Integer)
+        Dim PrefDirection As Integer
         If SnakeHead.X > Apple.X Then
-            ReturnDir = 2
-            If Direction <> 4 Then ReturnDir = 2
-
-            'left
+            PrefDirection = 2
+        ElseIf SnakeHead.X < Apple.X Then
+            PrefDirection = 4
         End If
-        If SnakeHead.X < Apple.X Then
-            ReturnDir = 4
-            If Direction <> 2 Then ReturnDir = 4
-            'right
+        If SnakeHead.Y < Apple.Y Then
+            PrefDirection = 1
+        ElseIf SnakeHead.Y > Apple.Y Then
+            PrefDirection = 3
         End If
         Dim TempSnakeHead As New Point(SnakeHead.X, SnakeHead.Y)
-        If ReturnDir = 1 Then
+        If PrefDirection = 1 Then
             TempSnakeHead.Update(SnakeHead.X, SnakeHead.Y + 1)
-        ElseIf ReturnDir = 2 Then
+        ElseIf PrefDirection = 2 Then
             TempSnakeHead.Update(SnakeHead.X - 2, SnakeHead.Y)
-        ElseIf ReturnDir = 3 Then
+        ElseIf PrefDirection = 3 Then
             TempSnakeHead.Update(SnakeHead.X, SnakeHead.Y - 1)
-        ElseIf ReturnDir = 4 Then
+        ElseIf PrefDirection = 4 Then
             TempSnakeHead.Update(SnakeHead.X + 2, SnakeHead.Y)
         End If
-        If SnakeList.Contains(TempSnakeHead) Then
-            'if the nextmove will result in the snake going into itself:
-            If ReturnDir = 1 Or ReturnDir = 3 Then 'if its going up or down then
-                TempSnakeHead.Update(SnakeHead.X - 2, SnakeHead.Y)
-                Dim temppoint As New Point(SnakeHead.X + 2, SnakeHead.Y)
-                If SnakeList.Contains(TempSnakeHead) Then
-                    ReturnDir = 2
-                Else
-                    ReturnDir = 4
-                End If
+        If SnakeBody.Contains(TempSnakeHead) Then
+            Dim dir As Integer
+            If PrefDirection = 4 Or PrefDirection = 2 Then
+                For i = 1 To 4
+                    dir = GetNextSnakePos(i, SnakeHead, SnakeBody, width, height, minheight)
+                    If dir <> -1 Then Return dir
+                Next
             Else
-                TempSnakeHead.Update(SnakeHead.X, SnakeHead.Y + 1)
-                Dim temppoint As New Point(SnakeHead.X, SnakeHead.Y - 1)
-                If SnakeList.Contains(TempSnakeHead) Then
-                    ReturnDir = 3
-                Else
-                    ReturnDir = 1
-                End If
-
+                Dim c As Integer = 4
+                For i = 1 To 4
+                    dir = GetNextSnakePos(c, SnakeHead, SnakeBody, width, height, minheight)
+                    If dir <> -1 Then Return dir
+                    c -= 1
+                Next
             End If
         End If
-        Return ReturnDir
+        Return PrefDirection
     End Function
-
+    Function GetNextSnakePos(ByVal dir As Integer, ByVal point As Point, ByVal list As List(Of Point), ByVal width As Integer, ByVal height As Integer, ByVal minheight As Integer)
+        Dim temp As New Point(0, 0)
+        If dir = 1 Then
+            temp.Update(point.X, point.Y + 1)
+            If Not list.Contains(temp) And temp.WithinLimits(1, width - 1, height - 1, minheight) Then
+                Return dir
+            End If
+        ElseIf dir = 2 Then
+            temp.Update(point.X - 2, point.Y)
+            If Not list.Contains(temp) And temp.WithinLimits(1, width - 1, height - 1, minheight) Then
+                Return dir
+            End If
+        ElseIf dir = 3 Then
+            temp.Update(point.X, point.Y - 1)
+            If Not list.Contains(temp) And temp.WithinLimits(1, width - 1, height - 1, minheight) Then
+                Return dir
+            End If
+        ElseIf dir = 4 Then
+            temp.Update(point.X + 2, point.Y)
+            If Not list.Contains(temp) And temp.WithinLimits(1, width - 1, height - 1, minheight) Then
+                Return dir
+            End If
+        End If
+        Return -1
+    End Function
 End Module
 Class Point
     Public X, Y As Integer
@@ -251,8 +256,8 @@ Class Point
         X = _x
         Y = _y
     End Sub
-    Function WithinLimits(ByVal width As Integer, ByVal height As Integer, ByVal minheight As Integer)
-        If Me.X >= 0 And Me.X <= width And Me.Y >= minheight + 1 And Me.Y <= height Then Return True
+    Function WithinLimits(ByVal minwidth As Integer, ByVal width As Integer, ByVal height As Integer, ByVal minheight As Integer)
+        If Me.X >= minwidth And Me.X <= width And Me.Y >= minheight + 1 And Me.Y <= height Then Return True
         Return False
     End Function
     Public Function Pop(ByVal list As List(Of Point))
@@ -270,8 +275,8 @@ Class Point
     Public Overrides Function Equals(obj As Object) As Boolean
         Dim cell = TryCast(obj, Point)
         Return cell IsNot Nothing AndAlso
-               X = cell.X AndAlso
-               Y = cell.Y
+                   X = cell.X AndAlso
+                   Y = cell.Y
     End Function
     Public Overrides Function GetHashCode() As Integer
         Dim hashCode As Long = 1855483287
