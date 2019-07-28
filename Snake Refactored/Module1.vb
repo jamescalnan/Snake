@@ -9,7 +9,8 @@ Module Module1
         Dim SnakeBody As New List(Of Point)
         Dim SnakeHead, Apple, AppleOffset As New Point(3, 6)
         Dim r As New Random
-        Dim Direction, SnakeLength, MinHeight, Width, Height, AppleScore As Integer
+        Dim Direction, SnakeLength, MinHeight, Width, Height, AppleScore, count As Integer
+        Dim Play As Boolean = False
         While 1
             Console.BackgroundColor = ConsoleColor.Black
             Console.ForegroundColor = ConsoleColor.Black
@@ -44,47 +45,50 @@ Module Module1
                     AppleScore += 1
                     PrintScore(AppleScore)
                 End If
-                For i = 0 To 1
-                    If Console.KeyAvailable Then
-                        Dim x, y As Integer
-                        x = Console.CursorLeft
-                        y = Console.CursorTop
-                        Dim temp As New Point(x, y)
-                        Dim temp1 As New Point(x - 1, y)
-                        If Not SnakeBody.Contains(temp) Then
-                            Console.BackgroundColor = ConsoleColor.Black
-                        ElseIf SnakeBody.Contains(temp) Or SnakeBody.Contains(temp1) Then
-                            Console.BackgroundColor = ConsoleColor.Green
-                        End If
-                        Dim key = Console.ReadKey
-                        Select Case key.Key.ToString
-                            Case "Enter"
-                                SnakeHead.Print("XX", ConsoleColor.DarkGreen)
+                For i = 0 To If(Play, 20, 3)
+                    If Play Then
+                        If Console.KeyAvailable Then
+                            Dim x, y As Integer
+                            x = Console.CursorLeft
+                            y = Console.CursorTop
+                            Dim temp As New Point(x, y)
+                            Dim temp1 As New Point(x - 1, y)
+                            If Not SnakeBody.Contains(temp) Then
                                 Console.BackgroundColor = ConsoleColor.Black
-                                Console.ForegroundColor = ConsoleColor.Black
-                                Console.ReadKey()
-                                SnakeHead.Print("XX", ConsoleColor.Green)
-                            Case "Escape"
-                                End
-                            Case "S"
-                                ShowStats()
-                                Exit While
-                            Case "DownArrow"
-                                If Direction <> 3 Then Direction = 1
-                                Exit For
-                            Case "RightArrow"
-                                If Direction <> 2 Then Direction = 4
-                                Exit For
-                            Case "UpArrow"
-                                If Direction <> 1 Then Direction = 3
-                                Exit For
-                            Case "LeftArrow"
-                                If Direction <> 4 Then Direction = 2
-                                Exit For
-                        End Select
+                            ElseIf SnakeBody.Contains(temp) Or SnakeBody.Contains(temp1) Then
+                                Console.BackgroundColor = ConsoleColor.Green
+                            End If
+                            Dim key = Console.ReadKey
+                            Select Case key.Key.ToString
+                                Case "Enter"
+                                    SnakeHead.Print("XX", ConsoleColor.DarkGreen)
+                                    Console.BackgroundColor = ConsoleColor.Black
+                                    Console.ForegroundColor = ConsoleColor.Black
+                                    Console.ReadKey()
+                                    SnakeHead.Print("XX", ConsoleColor.Green)
+                                Case "Escape"
+                                    End
+                                Case "S"
+                                    ShowStats()
+                                    Exit While
+                                Case "DownArrow"
+                                    If Direction <> 3 Then Direction = 1
+                                    Exit For
+                                Case "RightArrow"
+                                    If Direction <> 2 Then Direction = 4
+                                    Exit For
+                                Case "UpArrow"
+                                    If Direction <> 1 Then Direction = 3
+                                    Exit For
+                                Case "LeftArrow"
+                                    If Direction <> 4 Then Direction = 2
+                                    Exit For
+                            End Select
+                        End If
+                    Else
+                        If count > 5 Then Direction = GetComputerDir(SnakeBody, SnakeHead, Apple, Width, Height, MinHeight)
                     End If
-                    'If Count > 5 Then Direction = GetComputerDir(SnakeBody, SnakeHead, Apple, Width, Height, MinHeight)
-                    Threading.Thread.Sleep(2)
+                    Threading.Thread.Sleep(1)
                 Next
                 If Direction = 1 Then
                     SnakeHead.Update(SnakeHead.X, SnakeHead.Y + 1)
@@ -110,9 +114,9 @@ Module Module1
                     SnakeBody.RemoveAt(0)
                 End If
                 time_elapsed(Start)
-                'Count += 1
+                Count += 1
             End While
-            If AppleScore <> 0 Then RecordScore(AppleScore)
+            If Play Then If AppleScore <> 0 Then RecordScore(AppleScore)
             Console.BackgroundColor = ConsoleColor.Black
             Console.ForegroundColor = ConsoleColor.Black
             Console.Clear()
