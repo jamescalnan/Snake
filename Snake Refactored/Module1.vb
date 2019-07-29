@@ -208,15 +208,15 @@ Module Module1
         End If
         If SnakeBody.Contains(TempSnakeHead) Then
             Dim dir As Integer
-            If PrefDirection = 4 Or PrefDirection = 2 Then
+            If PrefDirection = 3 Or PrefDirection = 2 Then
                 For i = 1 To 4
-                    dir = GetNextSnakePos(i, SnakeHead, SnakeBody, width, height, minheight)
+                    dir = GetNextDir(i, SnakeHead, SnakeBody, width, height, minheight)
                     If dir <> -1 Then Return dir
                 Next
             Else
                 Dim c As Integer = 4
                 For i = 1 To 4
-                    dir = GetNextSnakePos(c, SnakeHead, SnakeBody, width, height, minheight)
+                    dir = GetNextDir(c, SnakeHead, SnakeBody, width, height, minheight)
                     If dir <> -1 Then Return dir
                     c -= 1
                 Next
@@ -224,7 +224,7 @@ Module Module1
         End If
         Return PrefDirection
     End Function
-    Function GetNextSnakePos(ByVal dir As Integer, ByVal point As Point, ByVal list As List(Of Point), ByVal width As Integer, ByVal height As Integer, ByVal minheight As Integer)
+    Function GetNextDir(ByVal dir As Integer, ByVal point As Point, ByVal list As List(Of Point), ByVal width As Integer, ByVal height As Integer, ByVal minheight As Integer)
         Dim temp As New Point(0, 0)
         If dir = 1 Then
             temp.Update(point.X, point.Y + 1)
